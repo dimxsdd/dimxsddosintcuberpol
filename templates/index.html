@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Додаток</title>
+    <style>
+        body {
+            background-color: #233342;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            align-items: center; /* Центрируем элементы по вертикали */
+            padding: 10px; /* Отступы вокруг логотипа */
+            justify-content: space-between; /* Разделяем элементы по краям */
+        }
+        .logo {
+            width: 100px; /* Размер логотипа */
+            margin-right: 20px; /* Отступ от логотипа до заголовка */
+        }
+        .exit-btn {
+            padding: 10px 20px;
+            background-color: #dc3545; /* Красный цвет для кнопки выхода */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 20px; /* Отступ от логотипа */
+        }
+        .exit-btn:hover {
+            background-color: #c82333; /* Более темный красный при наведении */
+        }
+        .container {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            width: 300px;
+            margin: 10px; /* Отступ между контейнерами */
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0; 
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #results, #leakResults {
+            text-align: left;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .button-container {
+            display: flex; /* Используем flexbox для выравнивания */
+            justify-content: center; /* Центрируем контейнеры */
+        }
+        .button-container > div {
+            flex: 1; /* Каждый контейнер занимает равное пространство */
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Полупрозрачный черный фон */
+            display: none; /* Изначально скрыто */
+            justify-content: center;
+            align-items: center;
+            z-index: 999; /* Показать поверх других элементов */
+        }
+        .lock-icon {
+            display: none;
+            font-size: 50px;
+            color: white;
+        }
+        .login-animation {
+            position: fixed;
+            top: 50%; /* Центрируем по вертикали */
+            left: 50%; /* Центрируем по горизонтали */
+            height: 5px;
+            background-color: #007bff;
+            width: 100%;
+            transform: translate(-50%, -50%) scaleX(0);
+            transition: transform 0.5s ease-in-out;
+            z-index: 1000; /* Показать поверх других элементов */
+        }
+        .no-scroll {
+            overflow: hidden; /* Отключаем прокрутку */
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="https://konstruktiv-news.com/wp-content/uploads/2021/04/%D0%BA%D0%B8%D0%B1%D0%B5%D1%80.jpg" alt="Логотип Киберполиции" class="logo"> <!-- Логотип киберполиции -->
+    <button class="exit-btn" id="exitButton" onclick="logout()">Вихід</button> <!-- Кнопка выхода -->
+</div>
+
+<div class="login-animation" id="loginAnimation"></div> <!-- Полоса анимации -->
+
+<div class="overlay" id="overlay">
+    <div class="lock-icon" id="lockIcon">🔓</div>
+</div>
+
+<div class="container" id="authContainer">
+    <h1>Авторизація</h1>
+    <input type="text" id="username" placeholder="Ім'я користувача" />
+    <input type="password" id="password" placeholder="Пароль" />
+    <button class="btn" onclick="login()">Увійти</button>
+</div>
+
+<div class="button-container" id="mainMenu" style="display: none;">
+    <div class="container">
+        <h1>Комплексна Перевірка</h1>
+        <button class="btn" onclick="openLeakSearch()">Перевірка</button>
+    </div>
+
+    <div class="container">
+        <h1>Перевірка за авто</h1>
+        <button class="btn" onclick="openCheckWindow()">Перевірка</button>
+    </div>
+    
+    <div class="container">
+        <h1>Державний Судовий Реєстр України</h1>
+        <button class="btn" onclick="window.open('https://court.gov.ua/fair/', '_blank')">Перевірка</button>
+    </div>
+</div>
+
+<div class="container" id="checkWindow" style="display: none;">
+    <h1>Пошук по автомобілю</h1>
+    <input type="text" id="number" placeholder="Введіть номер автомобіля" />
+    <button class="btn" onclick="runCarCheck()">Шукати</button>
+    <div id="results"></div>
+    <button class="btn" onclick="clearResults()">Скинути результати</button>
+    <button class="btn" onclick="goBackToMain()">Назад</button>
+</div>
+
+<div class="container" id="leakSearchWindow" style="display: none;">
+    <h1>Пошук по базі</h1>
+    <input type="text" id="query" placeholder="Введіть запит" />
+    <button class="btn" onclick="runSearch()">Шукати</button>
+    <div id="leakResults"></div>
+    <button class="btn" onclick="clearLeakResults()">Скинути результати</button>
+    <button class="btn" onclick="goBackFromLeaks()">Назад</button>
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (username === 'dgrebeniuk' && password === '283615') {
+            // Анимация входа
+            const animation = document.getElementById('loginAnimation');
+            animation.style.transform = 'translate(-50%, -50%) scaleX(1)';
+            document.getElementById('overlay').style.display = 'flex'; // Затемнить экран
+            document.body.classList.add('no-scroll'); // Отключаем прокрутку
+
+            setTimeout(() => {
+                animation.style.transform = 'translate(-50%, -50%) scaleX(0)';
+                document.getElementById('authContainer').style.display = 'none'; // Скрыть окно авторизации
+                document.getElementById('mainMenu').style.display = 'flex'; // Показать главное меню
+                document.getElementById('exitButton').style.display = 'inline-block'; // Показать кнопку выхода
+                document.getElementById('overlay').style.display = 'none'; // Скрыть затемнение
+                document.body.classList.remove('no-scroll'); // Включаем прокрутку обратно
+            }, 500);
+        } else {
+            alert('Невірні облікові дані. Будь ласка, спробуйте ще раз.');
+        }
+    }
+
+    function logout() {
+        document.getElementById('overlay').style.display = 'flex'; // Показать затемнение
+        const lockIcon = document.getElementById('lockIcon');
+        lockIcon.style.display = 'block'; // Показать открытый замок
+
+        // Закрыть замок
+        setTimeout(() => {
+            lockIcon.innerText = '🔒'; // Закрытый замок
+        }, 500); // Ускорить анимацию закрытия замка
+
+        // Вернуться к авторизации
+        setTimeout(() => {
+            document.getElementById('mainMenu').style.display = 'none'; // Скрыть главное меню
+            document.getElementById('checkWindow').style.display = 'none'; // Скрыть окно поиска по авто
+            document.getElementById('leakSearchWindow').style.display = 'none'; // Скрыть окно поиска по базе
+            document.getElementById('authContainer').style.display = 'block'; // Показать окно авторизации
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('exitButton').style.display = 'none'; // Скрыть кнопку выхода
+            lockIcon.style.display = 'none'; // Скрыть замок
+            document.getElementById('overlay').style.display = 'none'; // Скрыть затемнение
+            document.body.classList.remove('no-scroll'); // Включаем прокрутку обратно
+        }, 1500); // Ускорить время ожидания перед возвратом к авторизации
+    }
+
+    function openCheckWindow() {
+        document.getElementById('checkWindow').style.display = 'block';
+        document.getElementById('leakSearchWindow').style.display = 'none'; // Скрываем окно поиска по базе
+    }
+
+    function openLeakSearch() {
+        document.getElementById('leakSearchWindow').style.display = 'block';
+        document.getElementById('checkWindow').style.display = 'none'; // Скрываем окно поиска по авто
+    }
+
+    function runCarCheck() {
+        const number = document.getElementById('number').value;
+        fetch('/car-check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ number: number })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка при получении данных о машине.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const results = formatCarData(data.results);
+            document.getElementById('results').innerHTML = results;
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при отправке запроса.');
+        });
+    }
+
+    function formatCarData(data) {
+        if (!data || Object.keys(data).length === 0) {
+            return "Нет данных";
+        }
+        let formattedData = `<h3>Информация о автомобиле:</h3>`;
+        formattedData += `<p><strong>Модель:</strong> ${data.model} (${data.model_year})</p>`;
+        formattedData += `<p><strong>VIN:</strong> ${data.vin}</p>`;
+        formattedData += `<p><strong>Номер:</strong> ${data.digits}</p>`;
+        formattedData += `<p><strong>Цвет:</strong> ${data.operations[0].color.ua}</p>`;
+        formattedData += `<p><strong>Состояние:</strong> ${data.is_stolen ? "Угон" : "Не угнан"}</p>`;
+        formattedData += `<img src="${data.photo_url}" alt="Фото автомобиля" style="width:100%; max-width:300px;"/>`;
+        return formattedData;
+    }
+
+    function runSearch() {
+        const query = document.getElementById('query').value;
+        fetch('/run-script', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: query })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка при запуске скрипта.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('leakResults').innerHTML = data.results; // Отображаем результаты
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при отправке запроса.');
+        });
+    }
+
+    function clearResults() {
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('number').value = '';
+    }
+
+    function clearLeakResults() {
+        document.getElementById('leakResults').innerHTML = '';
+        document.getElementById('query').value = '';
+    }
+
+    function goBackToMain() {
+        document.getElementById('checkWindow').style.display = 'none';
+        document.getElementById('leakSearchWindow').style.display = 'none';
+        document.getElementById('mainMenu').style.display = 'flex'; // Возвращаем главное меню
+    }
+
+    function goBackFromLeaks() {
+        document.getElementById('leakSearchWindow').style.display = 'none';
+        document.getElementById('mainMenu').style.display = 'flex'; // Возвращаем главное меню
+    }
+</script>
+
+</body>
+</html>
